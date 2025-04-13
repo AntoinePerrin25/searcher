@@ -11,12 +11,13 @@ The program should be able to support levenshtein querry correction
 - Console and graphics mode
 - Being able for any mode to add a base dynamically, export/import a config file
 
-## Steps :
+## Step 1 :
 
-### 1
+### Console mode
 
-#### Console mode
-#### Opening a csv file
+
+
+### Opening a csv file
 
 - Without header format (searching through every entry)
 - With    header format (first line are search parameters)
