@@ -26,6 +26,7 @@ CsvFile* csv_read_header(const char* filename, char separator)
         fclose(file);
         return NULL;
     }
+    line[strcspn(line, "\n")] = 0; // Remove newline character if present
     // Counting headers
     csv->CsvFile_U.with_header.count_headers = 0;
     char* token = strtok(line, sep);
@@ -147,8 +148,11 @@ CsvFile* csv_read_noheader(const char* filename, char separator)
 }
 
 
-int csv_print(CsvFile* csv, FILE* file, int limit)
+int csv_print(CsvFile* csv, FILE* file, size_t limit)
 {
+    char sep[2] = {csv->separator, '\0'}; // Separator string for strtok
+    
+    /*
     if (csv->type == CSV_WITH_HEADER) {
         for (size_t i = 0; i < csv->CsvFile_U.with_header.count_headers-1; i++) {
             fprintf(file, "%s%c ", csv->CsvFile_U.with_header.header[i], csv->separator);
@@ -159,6 +163,19 @@ int csv_print(CsvFile* csv, FILE* file, int limit)
                 fprintf(file, "%s%c ", csv->CsvFile_U.with_header.entries[i][j], csv->separator);
             }
             fprintf(file, "%s\n", csv->CsvFile_U.with_header.entries[i][csv->CsvFile_U.with_header.count_headers-1]);
+        }
+    }
+    */
+    if (csv->type == CSV_WITH_HEADER) {
+        for (size_t i = 0; i < csv->CsvFile_U.with_header.count_headers; i++) {
+            fprintf(file, "%s%s%s", i ? sep : "", i ? " " : "", csv->CsvFile_U.with_header.header[i]);
+        }
+        fprintf(file, "\n");
+        for (size_t i = 0; i < limit  && i < csv->CsvFile_U.with_header.count_lines; i++) {
+            for (size_t j = 0; j < csv->CsvFile_U.with_header.count_headers; j++) {
+                fprintf(file, "%s%s%s", j ? sep : "", j ? " " : "", csv->CsvFile_U.with_header.entries[i][j]);
+            }
+            fprintf(file, "\n");
         }
     } else if (csv->type == CSV_NO_HEADER) {
         for (size_t i = 0; i < csv->CsvFile_U.no_header.count_lines && i < limit; i++) {
