@@ -27,8 +27,8 @@ typedef struct CsvFile{
         CSV_NO_HEADER
     } type;
     char separator;
-    union {
-        struct {
+    union CsvFile_U{
+        struct with_header{
             char**  header;         // array of strings (column names)
             char*** entries;        // 2D array of strings (rows x columns)
             size_t  count_lines;    // number of rows (excluding header)
@@ -36,7 +36,7 @@ typedef struct CsvFile{
             size_t  capacity;       // allocated capacity for rows
         } with_header;
 
-        struct {
+        struct no_header{
             char**  entries;        // 1D array of strings (each is a line of comma-separated values)
             size_t  count_lines;    // number of lines
             size_t  capacity;       // allocated capacity for lines
