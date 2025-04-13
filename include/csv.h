@@ -47,7 +47,7 @@ CsvFile* csv_read_header(const char* filename, char separator);
 // Read CSV file without header, open the file, read it and return a dynamically allocated CsvFile struct pointer, close the file after reading
 CsvFile* csv_read_noheader(const char* filename, char separator);
 // Print CSV File to file stream with a limit on the number of rows
-int csv_print(CsvFile* csv, FILE* file, int limit);
+int csv_print(CsvFile* csv, FILE* file, size_t limit);
 
 // Free memory allocated for CsvFile struct
 void csv_free(CsvFile* csv);
