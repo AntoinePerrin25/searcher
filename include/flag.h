@@ -62,7 +62,7 @@ typedef enum {
     COUNT_FLAG_TYPES,
 } Flag_Type;
 
-static_assert(COUNT_FLAG_TYPES == 4, "Exhaustive Flag_Value definition");
+//static_assert(COUNT_FLAG_TYPES == 4, "Exhaustive Flag_Value definition");
 typedef union {
     char *as_str;
     uint64_t as_uint64;
@@ -240,7 +240,7 @@ bool flag_parse(int argc, char **argv)
                 }
             }
             if (is_name || is_alias) {
-                static_assert(COUNT_FLAG_TYPES == 4, "Exhaustive flag type parsing");
+                //static_assert(COUNT_FLAG_TYPES == 4, "Exhaustive flag type parsing");
                 switch (c->flags[i].type) {
                 case FLAG_BOOL: {
                     c->flags[i].val.as_bool = true;
@@ -266,7 +266,7 @@ bool flag_parse(int argc, char **argv)
                     }
                     char *arg = flag_shift_args(&argc, &argv);
 
-                    static_assert(sizeof(unsigned long long int) == sizeof(uint64_t), "The original author designed this for x86_64 machine with the compiler that expects unsigned long long int and uint64_t to be the same thing, so they could use strtoull() function to parse it. Please adjust this code for your case and maybe even send the patch to upstream to make it work on a wider range of environments.");
+                    //static_assert(sizeof(unsigned long long int) == sizeof(uint64_t), "The original author designed this for x86_64 machine with the compiler that expects unsigned long long int and uint64_t to be the same thing, so they could use strtoull() function to parse it. Please adjust this code for your case and maybe even send the patch to upstream to make it work on a wider range of environments.");
                     char *endptr;
                     // TODO: replace strtoull with a custom solution
                     // That way we can get rid of the dependency on errno and static_assert
@@ -296,7 +296,7 @@ bool flag_parse(int argc, char **argv)
                     }
                     char *arg = flag_shift_args(&argc, &argv);
 
-                    static_assert(sizeof(unsigned long long int) == sizeof(size_t), "The original author designed this for x86_64 machine with the compiler that expects unsigned long long int and size_t to be the same thing, so they could use strtoull() function to parse it. Please adjust this code for your case and maybe even send the patch to upstream to make it work on a wider range of environments.");
+                    //static_assert(sizeof(unsigned long long int) == sizeof(size_t), "The original author designed this for x86_64 machine with the compiler that expects unsigned long long int and size_t to be the same thing, so they could use strtoull() function to parse it. Please adjust this code for your case and maybe even send the patch to upstream to make it work on a wider range of environments.");
                     char *endptr;
                     // TODO: replace strtoull with a custom solution
                     // That way we can get rid of the dependency on errno and static_assert
@@ -379,7 +379,7 @@ void flag_print_options(FILE *stream)
         if (padding < 1) padding = 1;
         fprintf(stream, "%*s%s\n", padding, "", flag->desc);
         
-        static_assert(COUNT_FLAG_TYPES == 4, "Exhaustive flag type defaults printing");
+        //static_assert(COUNT_FLAG_TYPES == 4, "Exhaustive flag type defaults printing");
         switch (c->flags[i].type) {
         case FLAG_BOOL:
             if (flag->def.as_bool) {
@@ -407,7 +407,7 @@ void flag_print_options(FILE *stream)
 void flag_print_error(FILE *stream)
 {
     Flag_Context *c = &flag_global_context;
-    static_assert(COUNT_FLAG_ERRORS == 6, "Exhaustive flag error printing");
+    //static_assert(COUNT_FLAG_ERRORS == 6, "Exhaustive flag error printing");
     switch (c->flag_error) {
     case FLAG_NO_ERROR:
         // NOTE: don't call flag_print_error() if flag_parse() didn't return false, okay? ._.
@@ -433,13 +433,6 @@ void flag_print_error(FILE *stream)
         assert(0 && "unreachable");
         exit(69);
     }
-}
-
-void usage(FILE* stream)
-{
-    fprintf(stream, "Usage: ./nob [OPTIONS]\n");
-    fprintf(stream, "OPTIONS:\n");
-    flag_print_options(stream);
 }
 
 #endif

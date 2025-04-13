@@ -1,3 +1,6 @@
+#ifndef CSV_H
+#define CSV_H
+
 #include <stddef.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -38,26 +41,28 @@ typedef struct CsvFile{
             size_t  count_lines;    // number of lines
             size_t  capacity;       // allocated capacity for lines
         } no_header;
-    };
+    }CsvFile_U;
 } CsvFile;
 
-// Open CSV File, read it and return a dynamically allocated CsvFile struct pointer, close the file after reading
-CsvFile* csv_open(const char* filename, char separator, bool with_header);
-// Close CSV File and free memory
-CsvFile csv_close(CsvFile csv);
-// Print CSV File to file stream
-CsvFile csv_print(CsvFile csv, FILE* file, int limit);
+// Read CSV file with header, open the file, read it and return a dynamically allocated CsvFile struct pointer, close the file after reading
+CsvFile* csv_read_header(const char* filename, char separator);
+// Read CSV file without header, open the file, read it and return a dynamically allocated CsvFile struct pointer, close the file after reading
+CsvFile* csv_read_noheader(const char* filename, char separator);
+// Print CSV File to file stream with a limit on the number of rows
+int csv_print(CsvFile* csv, FILE* file, int limit);
 
-
+// Free memory allocated for CsvFile struct
 void csv_free(CsvFile* csv);
 
 /**
- * @brief Global search fu through a CsvFile struct and return new CsvFile struct with the results
- * @param *csv
- * @param querry
- * @param search_column (enum {all, column1, column2, ...})
- * @param search_type (enum {all, contains, starts_with, ends_with})
- * @param correction boolean (if true, the search will return closest matches)
- * @return CsvFile struct to the new CsvFile struc with search results
+ * @brief Global search through a CsvFile struct and return new CsvFile struct with the results
+ * @param *csv - Pointer to the CsvFile struct to search in
+ * @param query - String to search for
+ * @param search_column - Column to search in (0=all columns)
+ * @param search_type - Type of search (0=all, 1=contains, 2=starts_with, 3=ends_with)
+ * @param correction - Enable fuzzy search/correction
+ * @return CsvFile struct containing the search results
 */ 
-CsvFile csv_search(CsvFile* csv, const char* query, int search_column, int search_type, bool correction);
+CsvFile* csv_search(CsvFile* csv, const char* query, int search_column, int search_type, bool correction);
+
+#endif // CSV_H

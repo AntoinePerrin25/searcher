@@ -4,6 +4,13 @@
 #define FLAG_IMPLEMENTATION
 #include "include/flag.h"
 
+void usage(FILE* stream)
+{
+    fprintf(stream, "Usage: nob [OPTIONS]\n");
+    fprintf(stream, "OPTIONS:\n");
+    flag_print_options(stream);
+}
+
 int main(int argc, char **argv)
 {
     NOB_GO_REBUILD_URSELF(argc, argv);
@@ -53,20 +60,15 @@ int main(int argc, char **argv)
             nob_cmd_append(&cmd, "gcc", "-Wall", "-Wextra");
 
             if (*debug)
-            {
                 nob_cmd_append(&cmd, "-g");
-            }
             if (*opti)
-            {
                 nob_cmd_append(&cmd, "-O3");
-            }
             if (*pedantic)
-            {
                 nob_cmd_append(&cmd, "-pedantic", "-std=c99");
-            }
+            
             nob_cmd_append(&cmd, "-Iinclude");
             nob_cmd_append(&cmd, "-Llib");
-            nob_cmd_append(&cmd, "-o", "main");
+            nob_cmd_append(&cmd, "-o", "search");
             nob_cmd_append(&cmd, "src/main.c", "src/csv.c");
             if (!nob_cmd_run_sync(cmd)) return 1;
             else
