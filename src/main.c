@@ -146,6 +146,7 @@ int main(int argc, char **argv) {
         // Open the CSV file based on whether it has a header or not
         if (input_files[i].has_header) {
             csv = csv_read_header(input_files[i].filename, input_files[i].separator);
+            csv_print(csv, stdout, 10); // Print the first 10 lines of the CSV file
         } else {
             csv = csv_read_noheader(input_files[i].filename, input_files[i].separator);
         }

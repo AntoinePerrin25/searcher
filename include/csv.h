@@ -33,13 +33,11 @@ typedef struct CsvFile{
             char*** entries;        // 2D array of strings (rows x columns)
             size_t  count_lines;    // number of rows (excluding header)
             size_t  count_headers;  // number of headers (columns)
-            size_t  capacity;       // allocated capacity for rows
         } with_header;
 
         struct no_header{
             char**  entries;        // 1D array of strings (each is a line of comma-separated values)
             size_t  count_lines;    // number of lines
-            size_t  capacity;       // allocated capacity for lines
         } no_header;
     }CsvFile_U;
 } CsvFile;
