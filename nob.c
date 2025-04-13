@@ -1,8 +1,10 @@
+#define NOB_EXPERIMENTAL_DELETE_OLD
 #define NOB_IMPLEMENTATION
 #include <nob.h>
 
 #define FLAG_IMPLEMENTATION
 #include "include/flag.h"
+
 
 void usage(FILE* stream)
 {
@@ -13,7 +15,7 @@ void usage(FILE* stream)
 
 int main(int argc, char **argv)
 {
-    NOB_GO_REBUILD_URSELF(argc, argv);
+    NOB_GO_REBUILD_URSELF_PLUS(argc, argv, "include/flag.h");
 
     bool *help = flag_bool("h", false, "Help Flag to display Usage");
     flag_add_alias(help, "help");
@@ -22,25 +24,26 @@ int main(int argc, char **argv)
     flag_add_alias(debug, "debug");
 
     bool *opti = flag_bool("O", false, "Enable O2 optimizations");
+    
+    bool *pedantic = flag_bool("pedantic", false, "Enable pedantic flag");
+    flag_add_alias(pedantic, "ped");
+    
+    bool *unused = flag_bool("unused", false, "Disable unused warnings");
+    flag_add_alias(unused, "u");
+    
+    bool *all = flag_bool("a", true, "Enable all common flags");
+    flag_add_alias(all, "all");
+    flag_add_alias(debug, "a");
+    flag_add_alias(debug, "all");
+    flag_add_alias(opti, "a");
+    flag_add_alias(opti, "all");
+    flag_add_alias(pedantic, "a");
+    flag_add_alias(pedantic, "all");
+    flag_add_alias(unused, "a");
+    flag_add_alias(unused, "all");
 
     bool *run = flag_bool("r", false, "Run the command after building it");
     flag_add_alias(run, "run");
-
-    bool *pedantic = flag_bool("pedantic", false, "Enable pedantic flag");
-    flag_add_alias(pedantic, "ped");
-
-    bool *all = flag_bool("a", false, "Enable all common flags");
-    flag_add_alias(all, "all");
-    flag_add_alias(debug, "all");
-    flag_add_alias(opti, "all");
-    flag_add_alias(pedantic, "all");
-
-    if (all)
-    {
-        *debug = true;
-        *opti = true;
-        *pedantic = true;
-    }
 
     if (!flag_parse(argc, argv))
     {
@@ -62,10 +65,12 @@ int main(int argc, char **argv)
             if (*debug)
                 nob_cmd_append(&cmd, "-g");
             if (*opti)
-                nob_cmd_append(&cmd, "-O3");
+                nob_cmd_append(&cmd, "-O2");
             if (*pedantic)
                 nob_cmd_append(&cmd, "-pedantic", "-std=c99");
-            
+            if (*unused)
+                nob_cmd_append(&cmd, "-Wno-unused-parameter");
+                
             nob_cmd_append(&cmd, "-Iinclude");
             nob_cmd_append(&cmd, "-Llib");
             nob_cmd_append(&cmd, "-o", "search");
