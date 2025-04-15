@@ -42,6 +42,23 @@ typedef struct CsvFile{
     }CsvFile_U;
 } CsvFile;
 
+
+// Linked list node for search results
+// Composed of a result, which file it came from, which line and column it came from, and a pointer to the next node
+typedef struct CsvResult
+{
+    bool isHeadered :1; // true if the result is from the header, false if it's from the entries
+    bool isCorrected :1; // true if the result was corrected, false if it was not
+    int distance : 6; // distance from the original string to the corrected string
+    char* result;
+    const char* filename;
+    char* column_name;
+    size_t line_number;
+    struct CsvResult* next;
+} CsvResult;
+
+
+
 // Read CSV file with header, open the file, read it and return a dynamically allocated CsvFile struct pointer, close the file after reading
 CsvFile* csv_read_header(const char* filename, char separator);
 // Read CSV file without header, open the file, read it and return a dynamically allocated CsvFile struct pointer, close the file after reading
