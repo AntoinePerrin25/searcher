@@ -146,7 +146,6 @@ int main(int argc, char **argv) {
         // Open the CSV file based on whether it has a header or not
         if (input_files[i].has_header) {
             csv = csv_read_header(input_files[i].filename, input_files[i].separator);
-            csv_print(csv, stdout, 10); // Print the first 10 lines of the CSV file
         } else {
             csv = csv_read_noheader(input_files[i].filename, input_files[i].separator);
         }
@@ -157,21 +156,21 @@ int main(int argc, char **argv) {
         }
         
         // Perform the search
-        CsvFile* result = csv_search(csv, *query, (int)*column, (int)*search_type, *correction);
+        CsvResult* results = csv_search(csv, *query, (int)*column, (int)*search_type, *correction);
         
-        if (result) {
-            // Print results
+        // Display the results with pagination
+        if (results) {
             printf("Search results for query '%s' in file %s:\n", *query, input_files[i].filename);
-            int printed = csv_print(result, stdout, (int)*limit);
-            printf("Found %d matching rows.\n", printed);
+            int total_results = csv_results_display(results, (size_t)*limit);
+            printf("Found %d matching rows.\n", total_results);
             
-            // Clean up result
-            csv_free(result);
+            // Free the results
+            csv_result_free(results);
         } else {
             printf("No results found for query '%s' in file %s.\n", *query, input_files[i].filename);
         }
         
-        // Clean up csv
+        // Free the CSV data
         csv_free(csv);
     }
 
