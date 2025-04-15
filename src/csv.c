@@ -190,8 +190,49 @@ int csv_print(CsvFile* csv, FILE* file, size_t limit)
 
 void csv_free(CsvFile* csv)
 {
-    printf("[TODO] csv_free is not implemented yet\n");
-    return; // TODO: Implement this function
+    if (!csv) {
+        return;  // Nothing to free
+    }
+    
+    if (csv->type == CSV_WITH_HEADER) {
+        // Free header array
+        if (csv->CsvFile_U.with_header.header) {
+            for (size_t i = 0; i < csv->CsvFile_U.with_header.count_headers; i++) {
+                if (csv->CsvFile_U.with_header.header[i]) {
+                    free(csv->CsvFile_U.with_header.header[i]);
+                }
+            }
+            free(csv->CsvFile_U.with_header.header);
+        }
+        
+        // Free entries 2D array
+        if (csv->CsvFile_U.with_header.entries) {
+            for (size_t i = 0; i < csv->CsvFile_U.with_header.count_lines; i++) {
+                if (csv->CsvFile_U.with_header.entries[i]) {
+                    for (size_t j = 0; j < csv->CsvFile_U.with_header.count_headers; j++) {
+                        if (csv->CsvFile_U.with_header.entries[i][j]) {
+                            free(csv->CsvFile_U.with_header.entries[i][j]);
+                        }
+                    }
+                    free(csv->CsvFile_U.with_header.entries[i]);
+                }
+            }
+            free(csv->CsvFile_U.with_header.entries);
+        }
+    } else if (csv->type == CSV_NO_HEADER) {
+        // Free entries 1D array
+        if (csv->CsvFile_U.no_header.entries) {
+            for (size_t i = 0; i < csv->CsvFile_U.no_header.count_lines; i++) {
+                if (csv->CsvFile_U.no_header.entries[i]) {
+                    free(csv->CsvFile_U.no_header.entries[i]);
+                }
+            }
+            free(csv->CsvFile_U.no_header.entries);
+        }
+    }
+    
+    // Free the CsvFile struct itself
+    free(csv);
 }
 
 
