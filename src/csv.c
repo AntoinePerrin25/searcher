@@ -145,8 +145,68 @@ CsvFile* csv_read_header(const char* filename, char separator)
 
 CsvFile* csv_read_noheader(const char* filename, char separator)
 {
-    printf("[TODO] csv_read_noheader is not implemented yet\n");
-    return NULL; // TODO: Implement this function
+    FILE* file = fopen(filename, "r");
+    if (!file) {
+        perror("Failed to open file");
+        return NULL;
+    }
+
+    CsvFile* csv = malloc(sizeof(CsvFile));
+    if (!csv) {
+        fclose(file);
+        return NULL;
+    }
+
+    // Initialize CSV file without header
+    csv->type = CSV_NO_HEADER;
+    csv->separator = separator;
+    
+    // Count the number of lines in the file
+    char line[1024];
+    csv->CsvFile_U.no_header.count_lines = 0;
+    while (fgets(line, sizeof(line), file)) {
+        csv->CsvFile_U.no_header.count_lines++;
+    }
+    
+    // Reset file pointer to the beginning of the file
+    fseek(file, 0, SEEK_SET);
+    
+    // Allocate memory for entries (1D array of strings)
+    csv->CsvFile_U.no_header.entries = malloc(csv->CsvFile_U.no_header.count_lines * sizeof(char*));
+    if (!csv->CsvFile_U.no_header.entries) {
+        free(csv);
+        fclose(file);
+        return NULL;
+    }
+    
+    // Read each line and store it
+    size_t line_index = 0;
+    while (fgets(line, sizeof(line), file) && line_index < csv->CsvFile_U.no_header.count_lines) {
+        // Remove trailing newline if present
+        line[strcspn(line, "\n")] = 0;
+        
+        // Allocate memory for this line's content
+        csv->CsvFile_U.no_header.entries[line_index] = malloc(strlen(line) + 1);
+        if (!csv->CsvFile_U.no_header.entries[line_index]) {
+            // Clean up previous allocations if this one fails
+            for (size_t j = 0; j < line_index; j++) {
+                free(csv->CsvFile_U.no_header.entries[j]);
+            }
+            free(csv->CsvFile_U.no_header.entries);
+            free(csv);
+            fclose(file);
+            return NULL;
+        }
+        
+        // Copy the line into the allocated memory
+        strcpy(csv->CsvFile_U.no_header.entries[line_index], line);
+        line_index++;
+    }
+    
+    // Close the file after reading
+    fclose(file);
+    
+    return csv;
 }
 
 
