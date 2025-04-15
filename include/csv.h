@@ -70,14 +70,28 @@ int csv_print(CsvFile* csv, FILE* file, size_t limit);
 void csv_free(CsvFile* csv);
 
 /**
- * @brief Global search through a CsvFile struct and return new CsvFile struct with the results
+ * @brief Global search through a CsvFile struct and return search results as a linked list
  * @param *csv - Pointer to the CsvFile struct to search in
  * @param query - String to search for
  * @param search_column - Column to search in (0=all columns)
  * @param search_type - Type of search (0=all, 1=contains, 2=starts_with, 3=ends_with)
  * @param correction - Enable fuzzy search/correction
- * @return CsvFile struct containing the search results
-*/ 
-CsvFile* csv_search(CsvFile* csv, const char* query, int search_column, int search_type, bool correction);
+ * @return CsvResult struct linked list containing the search results
+ */ 
+CsvResult* csv_search(CsvFile* csv, const char* query, int search_column, int search_type, bool correction);
+
+/**
+ * @brief Display search results with pagination
+ * @param results - Pointer to the first CsvResult in the linked list
+ * @param limit - Number of results to display per page
+ * @return Number of total results
+ */
+int csv_results_display(CsvResult *results, size_t limit);
+
+/**
+ * @brief Free memory allocated for CsvResult linked list
+ * @param result - Pointer to the first CsvResult in the linked list
+ */
+void csv_result_free(CsvResult *result);
 
 #endif // CSV_H
