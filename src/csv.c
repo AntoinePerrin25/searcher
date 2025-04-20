@@ -746,10 +746,13 @@ int csv_results_display(CsvResult *results, size_t limit, char *querry, double t
     int ret = 0;
     const int i_format_column = 25;
     // TODO: Compute max column width
-    size_t idx = 0;
-    current = results;
     do
     {
+        // Reset current and go to page #
+        
+        size_t idx = 0;
+        for(current = results; idx < (current_page -1) * limit; current=current->next, idx++);
+
         // Clear screen
         printf("\033[2J\033[H"); // ANSI escape codes to clear screen and move cursor to home position
         printf("Search Results for Query: %s\n", querry);
@@ -763,7 +766,7 @@ int csv_results_display(CsvResult *results, size_t limit, char *querry, double t
         for (size_t i = 0; current && i < limit; i++, current = current->next, idx++)
         {
             printf("%-5zu %-*s %-8zu %-30s %-5s\n",
-                   idx,
+                   idx + 1,
                    i_format_column,
                    current->column_name ? current->column_name : "N/A",
                    current->line_number,
@@ -780,40 +783,38 @@ int csv_results_display(CsvResult *results, size_t limit, char *querry, double t
         fflush(stdin);
         if(!fgets(choice, sizeof(choice), stdin))
             break;
-
+        choice[strcspn(choice, "\n")] = 0; // Remove newline character
+        // Convert to lowercase for case-insensitive comparison
+        strlwr(choice);
         // Process user choice
         switch (choice[0])
         {   
         case 'n':
-        case 'N':
             if (current_page < total_pages)
             {
                 current_page++;
             }
             break;
         case 'p':
-        case 'P':
             if (current_page > 1)
             {
                 current_page--;
             }
             break;
         case 'l':
-        case 'L':
             current_page = total_pages;
             break;
         case 'f':
-        case 'F':
             current_page = 1;
             break;
         case 'q':
-        case 'Q':
             ret = 1; // Signal to quit
             break;
         default:
             // Go to page nbr choice
             char *end;
             size_t pageGOTO = strtoul(choice, &end, 0);
+            printf("PAGE GOTO %zu, *end = %d\n\n", pageGOTO, *end);
             if(!(*end) && pageGOTO && pageGOTO <= total_pages){
                 current_page = pageGOTO;
             }
