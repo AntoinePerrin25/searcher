@@ -115,13 +115,13 @@ int main(int argc, char **argv) {
     }
 
     // Validate required arguments
-    if (file_count == 0) {
+    if (!file_count) {
         fprintf(stderr, "Error: No input files specified. Use -ih or -in to specify input files.\n");
         usage(stderr);
         return 1;
     }
 
-    if (strlen(*query) == 0) {
+    if (!strlen(*query)) {
         fprintf(stderr, "Error: No search query specified. Use -q or --query to specify a search query.\n");
         usage(stderr);
         return 1;
