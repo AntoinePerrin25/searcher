@@ -459,7 +459,7 @@ static int levenshtein_distance(const char *s1, const char *s2)
 }
 
 // Checks if the field matches the query based on search type
-static bool match_field(const char *field, const char *query, int search_type, bool correction, int *distance)
+static bool match_field(const char *field, const char *query, size_t search_type, bool correction, int *distance)
 {
     *distance = 0;
 
@@ -529,17 +529,13 @@ void csv_result_free(CsvResult *result)
     while (current)
     {
         CsvResult *next = current->next;
-        if (current->result)
-            free(current->result);
-        if (current->column_name)
-            free(current->column_name);
         free(current);
         current = next;
     }
 }
 
 // Implementation of csv_search function
-CsvResult *csv_search(CsvFile *csv, const char *query, int search_column, int search_type, bool correction)
+CsvResult *csv_search(CsvFile *csv, const char *query, size_t search_column, size_t search_type, bool correction)
 {
     CsvResult *head = NULL; // Head of the linked list
     CsvResult *tail = NULL; // Tail of the linked list
@@ -556,17 +552,17 @@ CsvResult *csv_search(CsvFile *csv, const char *query, int search_column, int se
                 if (match_field(csv->CsvFile_U.with_header.header[i], query, search_type, correction, &distance))
                 {
                     // Create a new result node
-                    CsvResult *new_result = malloc(sizeof(CsvResult));
+                    CsvResult *new_result = calloc(1, sizeof(CsvResult));
                     if (!new_result)
                         continue;
 
                     new_result->isHeadered = true;
                     new_result->isCorrected = (distance > 0);
                     new_result->distance = distance;
-                    new_result->result = strdup(csv->CsvFile_U.with_header.header[i]);
-                    new_result->filename = NULL; // No filename for header
-                    new_result->column_name = strdup(csv->CsvFile_U.with_header.header[i]);
+                    new_result->result      = csv->CsvFile_U.with_header.header[i];
+                    new_result->column_name = csv->CsvFile_U.with_header.header[i];
                     new_result->line_number = 0; // Headers are at line 0
+                    new_result->filename = NULL; // No filename for header
                     new_result->next = NULL;
 
                     // Add to the linked list
@@ -584,22 +580,22 @@ CsvResult *csv_search(CsvFile *csv, const char *query, int search_column, int se
                 }
             }
         }
-        else if (search_column > 0 && (size_t)search_column <= csv->CsvFile_U.with_header.count_headers)
+        else if (search_column <= csv->CsvFile_U.with_header.count_headers)
         {
             // Check only the specified header column
             size_t col = search_column - 1; // Convert to 0-based index
             if (match_field(csv->CsvFile_U.with_header.header[col], query, search_type, correction, &distance))
             {
-                CsvResult *new_result = malloc(sizeof(CsvResult));
+                CsvResult *new_result = calloc(1, sizeof(CsvResult));
                 if (new_result)
                 {
                     new_result->isHeadered = true;
                     new_result->isCorrected = (distance > 0);
                     new_result->distance = distance;
-                    new_result->result = strdup(csv->CsvFile_U.with_header.header[col]);
-                    new_result->filename = NULL;
-                    new_result->column_name = strdup(csv->CsvFile_U.with_header.header[col]);
+                    new_result->column_name = csv->CsvFile_U.with_header.header[col];
+                    new_result->result      = csv->CsvFile_U.with_header.header[col];
                     new_result->line_number = 0;
+                    new_result->filename = NULL;
                     new_result->next = NULL;
 
                     head = new_result;
@@ -626,10 +622,10 @@ CsvResult *csv_search(CsvFile *csv, const char *query, int search_column, int se
                         new_result->isHeadered = false;
                         new_result->isCorrected = (distance > 0);
                         new_result->distance = distance;
-                        new_result->result = strdup(csv->CsvFile_U.with_header.entries[i][j]);
-                        new_result->filename = NULL;
-                        new_result->column_name = strdup(csv->CsvFile_U.with_header.header[j]);
+                        new_result->column_name = csv->CsvFile_U.with_header.header[j];
+                        new_result->result      = csv->CsvFile_U.with_header.entries[i][j];
                         new_result->line_number = i + 1; // +1 because lines are 1-indexed for display
+                        new_result->filename = NULL;
                         new_result->next = NULL;
 
                         if (!head)
@@ -646,13 +642,13 @@ CsvResult *csv_search(CsvFile *csv, const char *query, int search_column, int se
                     }
                 }
             }
-            else if (search_column > 0 && (size_t)search_column <= csv->CsvFile_U.with_header.count_headers)
+            else if (search_column <= csv->CsvFile_U.with_header.count_headers)
             {
                 // Search only the specified column
                 size_t col = search_column - 1; // Convert to 0-based index
                 if (match_field(csv->CsvFile_U.with_header.entries[i][col], query, search_type, correction, &distance))
                 {
-                    CsvResult *new_result = malloc(sizeof(CsvResult));
+                    CsvResult *new_result = calloc(1, sizeof(CsvResult));
                     if (!new_result)
                         continue;
 
@@ -721,12 +717,6 @@ CsvResult *csv_search(CsvFile *csv, const char *query, int search_column, int se
 // Display search results with pagination
 int csv_results_display(CsvResult *results, size_t limit, char *querry, double time)
 {
-    if (!results)
-    {
-        printf("No result found.\n");
-        return 0;
-    }
-
     const char titleColumn[] = "Column";
     int i_format_column = sizeof(titleColumn) - 1;
 

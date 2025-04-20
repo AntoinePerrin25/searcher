@@ -50,9 +50,9 @@ typedef struct CsvResult
     bool isHeadered :1; // true if the result is from the header, false if it's from the entries
     bool isCorrected :1; // true if the result was corrected, false if it was not
     int distance : 6; // distance from the original string to the corrected string
-    char* result;
+    const char* result;
     const char* filename;
-    char* column_name;
+    const char* column_name;
     size_t line_number;
     struct CsvResult* next;
 } CsvResult;
@@ -78,7 +78,7 @@ void csv_free(CsvFile* csv);
  * @param correction - Enable fuzzy search/correction
  * @return CsvResult struct linked list containing the search results
  */ 
-CsvResult* csv_search(CsvFile* csv, const char* query, int search_column, int search_type, bool correction);
+CsvResult* csv_search(CsvFile* csv, const char* query, size_t search_column, size_t search_type, bool correction);
 
 /**
  * @brief Display search results with pagination
