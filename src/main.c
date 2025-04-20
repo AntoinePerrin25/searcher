@@ -29,30 +29,15 @@ typedef struct InputFile {
 int main(int argc, char **argv) {
 
     // Help flag
-    bool *help = flag_bool_aliases("h", false, "Display help information", "help");
-
-    // Input files with header flag
-    char **input_header = flag_str_aliases("ih", NULL, "Input CSV file with header", "input-header");
-
-    // Input files without header flag
+    bool *help            = flag_bool_aliases("h", false, "Display help information", "help");
+    bool *correction      = flag_bool_aliases("c", false, "Enable fuzzy search/correction", "correction");
+    char **input_header   = flag_str_aliases("ih", NULL, "Input CSV file with header", "input-header");
     char **input_noheader = flag_str_aliases("in", NULL, "Input CSV file without header", "input-noheader");
-    
-    // Number of results flag
-    uint64_t *limit = flag_uint64_aliases("l", 10, "Limit number of results", "limit");
-
-    // Correction option flag
-    bool *correction = flag_bool_aliases("c", false, "Enable fuzzy search/correction", "correction");
-
-    // Column search flag
-    uint64_t *column = flag_uint64_aliases("col", 0, "Column to search (0=all)", "column");
-
-    // Search type flag
-    uint64_t *search_type = flag_uint64_aliases("t", 0, "Search type (0=all, 1=contains, 2=starts_with, 3=ends_with)", "type");
-
-    // Query word flag
-    char **query = flag_str_aliases("q", "", "Search query", "query");
-    // Separator flag
-    char **separator = flag_str_aliases("s", ",", "CSV separator character", "separator");
+    char **query          = flag_str_aliases("q", "", "Search query", "query");
+    char **separator      = flag_str_aliases("s", ",", "CSV separator character", "separator");
+    size_t *limit         = flag_size_aliases("l", 10, "Limit number of results", "limit");
+    size_t *column        = flag_size_aliases("col", 0, "Column to search (0=all)", "column");
+    size_t *search_type   = flag_size_aliases("t", 0, "Search type (0=all, 1=contains, 2=starts_with, 3=ends_with)", "type");
     
     // Parse the command line arguments
     if (!flag_parse(argc, argv)) {
@@ -141,23 +126,20 @@ int main(int argc, char **argv) {
         }
         
         if (!csv) {
-            fprintf(stderr, "Error: Could not open file %s\n", input_files[i].filename);
+            fprintf(stderr, "Error: Could not open file '%s'\n", input_files[i].filename);
             continue;
         }
         
         // Perform the search
-        CsvResult* results = csv_search(csv, *query, (int)*column, (int)*search_type, *correction);
+        CsvResult* results = csv_search(csv, *query, *column, *search_type, *correction);
         
         // Display the results with pagination
         if (results) {
-            printf("Search results for query '%s' in file %s:\n", *query, input_files[i].filename);
-            int total_results = csv_results_display(results, (size_t)*limit);
-            printf("Found %d matching rows.\n", total_results);
-            
+            csv_results_display(results, *limit, *query, totaltime);            
             // Free the results
             csv_result_free(results);
         } else {
-            printf("No results found for query '%s' in file %s.\n", *query, input_files[i].filename);
+            printf("No results found for query '%s' in file '%s'.\n", *query, input_files[i].filename);
         }
         
         // Free the CSV data
