@@ -3,3 +3,4 @@
 # Calcultate column max size and adjust to align
 # Allow taking multiple files at once
 # afficher fichier source dans results
+# Lire tout le fichier et pointer sur le buffer

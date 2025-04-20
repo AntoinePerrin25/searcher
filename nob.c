@@ -1,7 +1,6 @@
-#define NOB_EXPERIMENTAL_DELETE_OLD
 #define NOB_IMPLEMENTATION
 #include <nob.h>
-
+//
 #define FLAG_IMPLEMENTATION
 #include "include/flag.h"
 
@@ -15,7 +14,7 @@ void usage(FILE* stream)
 
 int main(int argc, char **argv)
 {
-    NOB_GO_REBUILD_URSELF_PLUS(argc, argv, "include/flag.h");
+    NOB_GO_REBUILD_URSELF(argc, argv);
 
     bool *help = flag_bool("h", false, "Help Flag to display Usage");
     flag_add_alias(help, "help");

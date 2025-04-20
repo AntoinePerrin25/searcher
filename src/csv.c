@@ -372,16 +372,9 @@ static bool str_contains(const char *haystack, const char *needle)
             free(needle_lower);
         return false;
     }
-
-    // Convert both strings to lowercase
-    for (size_t i = 0; haystack_lower[i]; i++)
-    {
-        haystack_lower[i] = tolower(haystack_lower[i]);
-    }
-    for (size_t i = 0; needle_lower[i]; i++)
-    {
-        needle_lower[i] = tolower(needle_lower[i]);
-    }
+    
+    strlwer(haystack_lower);
+    strlwer(needle_lower);
 
     bool result = strstr(haystack_lower, needle_lower) != NULL;
 
