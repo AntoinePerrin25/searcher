@@ -726,15 +726,26 @@ int csv_results_display(CsvResult *results, size_t limit, char *querry, double t
 {
     if (!results)
     {
-        printf("No results found.\n");
+        printf("No result found.\n");
         return 0;
     }
+
+    const char titleColumn[] = "Column";
+    int i_format_column = sizeof(titleColumn) - 1;
 
     CsvResult *current;
     size_t total_results = 0;
     // Count total results
     for (current = results; current; current = current->next)
     {
+        if (current->column_name)
+        {
+            int len = strlen(current->column_name);
+            if (i_format_column < len)
+            {
+                i_format_column = len;
+            }
+        }
         total_results++;
         current = current->next;
     }
@@ -744,14 +755,16 @@ int csv_results_display(CsvResult *results, size_t limit, char *querry, double t
 
     char choice[5];
     int ret = 0;
-    const int i_format_column = 25;
     // TODO: Compute max column width
     do
     {
         // Reset current and go to page #
-        
+
         size_t idx = 0;
-        for(current = results; idx < (current_page -1) * limit; current=current->next, idx++);
+        for (current = results; idx < (current_page - 1) * limit; idx++)
+        {
+            current = current->next;
+        }
 
         // Clear screen
         printf("\033[2J\033[H"); // ANSI escape codes to clear screen and move cursor to home position
@@ -760,7 +773,7 @@ int csv_results_display(CsvResult *results, size_t limit, char *querry, double t
 
         // Display page header
         printf("\n===== Search Results (Page %zu of %zu) =====\n\n", current_page, total_pages);
-        printf("%-5s %-20s %-8s %-10s %-30s\n", "No.", "Column", "Line", "Corrected", "Result");
+        printf("%-5s %-*s %-8s %-30s %-10s\n", "No.", i_format_column, titleColumn, "Line", "Result", results->isCorrected ? "Corrected" : "");
         printf("--------------------------------------------------------------\n");
 
         for (size_t i = 0; current && i < limit; i++, current = current->next, idx++)
@@ -781,14 +794,14 @@ int csv_results_display(CsvResult *results, size_t limit, char *querry, double t
 
         // Get user choice
         fflush(stdin);
-        if(!fgets(choice, sizeof(choice), stdin))
+        if (!fgets(choice, sizeof(choice), stdin))
             break;
         choice[strcspn(choice, "\n")] = 0; // Remove newline character
         // Convert to lowercase for case-insensitive comparison
         strlwr(choice);
         // Process user choice
         switch (choice[0])
-        {   
+        {
         case 'n':
             if (current_page < total_pages)
             {
@@ -815,7 +828,8 @@ int csv_results_display(CsvResult *results, size_t limit, char *querry, double t
             char *end;
             size_t pageGOTO = strtoul(choice, &end, 0);
             printf("PAGE GOTO %zu, *end = %d\n\n", pageGOTO, *end);
-            if(!(*end) && pageGOTO && pageGOTO <= total_pages){
+            if (!(*end) && pageGOTO && pageGOTO <= total_pages)
+            {
                 current_page = pageGOTO;
             }
             break;
