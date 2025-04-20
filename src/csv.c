@@ -541,7 +541,7 @@ void csv_result_free(CsvResult *result)
 // Implementation of csv_search function
 CsvResult *csv_search(CsvFile *csv, const char *query, int search_column, int search_type, bool correction)
 {
-    if (!csv || !query)
+    if (!query)
         return NULL;
 
     CsvResult *head = NULL; // Head of the linked list

@@ -29,40 +29,30 @@ typedef struct InputFile {
 int main(int argc, char **argv) {
 
     // Help flag
-    bool *help = flag_bool("h", false, "Display help information");
-    flag_add_alias(help, "help");
+    bool *help = flag_bool_aliases("h", false, "Display help information", "help");
 
     // Input files with header flag
-    char **input_header = flag_str("ih", NULL, "Input CSV file with header");
-    flag_add_alias(input_header, "input-header");
+    char **input_header = flag_str_aliases("ih", NULL, "Input CSV file with header", "input-header");
 
     // Input files without header flag
-    char **input_noheader = flag_str("in", NULL, "Input CSV file without header");
-    flag_add_alias(input_noheader, "input-noheader");
-
+    char **input_noheader = flag_str_aliases("in", NULL, "Input CSV file without header", "input-noheader");
+    
     // Number of results flag
-    uint64_t *limit = flag_uint64("l", 10, "Limit number of results");
-    flag_add_alias(limit, "limit");
+    uint64_t *limit = flag_uint64_aliases("l", 10, "Limit number of results", "limit");
 
     // Correction option flag
-    bool *correction = flag_bool("c", false, "Enable fuzzy search/correction");
-    flag_add_alias(correction, "correction");
+    bool *correction = flag_bool_aliases("c", false, "Enable fuzzy search/correction", "correction");
 
     // Column search flag
-    uint64_t *column = flag_uint64("col", 0, "Column to search (0=all)");
-    flag_add_alias(column, "column");
+    uint64_t *column = flag_uint64_aliases("col", 0, "Column to search (0=all)", "column");
 
     // Search type flag
-    uint64_t *search_type = flag_uint64("t", 0, "Search type (0=all, 1=contains, 2=starts_with, 3=ends_with)");
-    flag_add_alias(search_type, "type");
+    uint64_t *search_type = flag_uint64_aliases("t", 0, "Search type (0=all, 1=contains, 2=starts_with, 3=ends_with)", "type");
 
     // Query word flag
-    char **query = flag_str("q", "", "Search query");
-    flag_add_alias(query, "query");
-
+    char **query = flag_str_aliases("q", "", "Search query", "query");
     // Separator flag
-    char **separator = flag_str("s", ",", "CSV separator character");
-    flag_add_alias(separator, "separator");
+    char **separator = flag_str_aliases("s", ",", "CSV separator character", "separator");
     
     // Parse the command line arguments
     if (!flag_parse(argc, argv)) {
