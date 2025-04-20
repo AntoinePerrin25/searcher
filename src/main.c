@@ -141,7 +141,7 @@ int main(int argc, char **argv) {
     for (int i = 0; i < file_count; i++) {
         printf("Processing file: %s\n", input_files[i].filename);
         
-        CsvFile* csv = NULL;
+        CsvFile* csv;
         
         // Open the CSV file based on whether it has a header or not
         if (input_files[i].has_header) {
