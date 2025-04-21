@@ -31,15 +31,15 @@ typedef struct InputFile {
 int main(int argc, char **argv) {
 
     // Help flag
-    bool *help            = flag_bool_aliases("h", false, "Display help information", "help");
-    bool *correction      = flag_bool_aliases("c", false, "Enable fuzzy search/correction", "correction");
-    char **input_header   = flag_str_aliases("ih", NULL, "Input CSV file with header", "input-header");
-    char **input_noheader = flag_str_aliases("in", NULL, "Input CSV file without header", "input-noheader");
-    char **query          = flag_str_aliases("q", "", "Search query", "query");
-    char **separator      = flag_str_aliases("s", ",", "CSV separator character", "separator");
-    size_t *limit         = flag_size_aliases("l", 10, "Limit number of results", "limit");
-    size_t *column        = flag_size_aliases("col", 0, "Column to search (0=all)", "column");
-    size_t *search_type   = flag_size_aliases("t", 0, "Search type (0=all, 1=contains, 2=starts_with, 3=ends_with)", "type");
+    bool *help            = flag_bool_aliases("h"  , false, "Display help information",       "help");
+    bool *correction      = flag_bool_aliases("c"  , false, "Enable fuzzy search/correction", "correction");
+    char **input_header   = flag_str_aliases ("ih" , NULL , "Input CSV file with header",     "input-header");
+    char **input_noheader = flag_str_aliases ("in" , NULL , "Input CSV file without header",  "input-noheader");
+    char **query          = flag_str_aliases ("q"  , ""   , "Search query",                   "query");
+    char **separator      = flag_str_aliases ("s"  , ","  , "CSV separator character",        "separator");
+    size_t *limit         = flag_size_aliases("l"  , 10   , "Limit number of results",        "limit");
+    size_t *column        = flag_size_aliases("col", 0    , "Column to search (0=all)",       "column");
+    size_t *search_type   = flag_size_aliases("t"  , 0    , "Search type (0=all, 1=contains, 2=starts_with, 3=ends_with)", "type");
     
     // Parse the command line arguments
     if (!flag_parse(argc, argv)) {
