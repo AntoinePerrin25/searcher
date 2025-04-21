@@ -46,7 +46,8 @@ int main(int argc, char **argv)
                 nob_cmd_append(&cmd, "-O2");
             if (*all || *pedantic)
                 nob_cmd_append(&cmd, "-pedantic", "-std=c99");
-                
+             
+            nob_cmd_append(&cmd, "-fopenmp");
             nob_cmd_append(&cmd, "-Iinclude");
             nob_cmd_append(&cmd, "-Llib");
             nob_cmd_append(&cmd, "-o", "search");

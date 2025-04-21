@@ -2,6 +2,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <stdarg.h>
+#include <omp.h>
 
 CsvFile *csv_read_header(const char *filename, char separator)
 {
@@ -528,179 +529,129 @@ void csv_result_free(CsvResult *result)
 }
 
 // Implementation of csv_search function
-CsvResult *csv_search(CsvFile *csv, const char *query, size_t search_column, size_t search_type, bool correction)
+CsvResult* csv_search(CsvFile* csv, const char* query, size_t search_column, size_t search_type, bool correction) 
 {
-    CsvResult *head = NULL; // Head of the linked list
-    CsvResult *tail = NULL; // Tail of the linked list
-    int match_count = 0;    // Count of matches
-    int distance = 0;       // Levenshtein distance
+    CsvResult* head = NULL;
+    CsvResult* local_results[omp_get_max_threads()];
+    int local_counts[omp_get_max_threads()];
+    memset(local_results, 0, sizeof(local_results));
+    memset(local_counts, 0, sizeof(local_counts));
 
-    if (csv->type == CSV_WITH_HEADER)
-    {
-        // Search in headers first (if search_column is 0 or valid column index)
-        if (search_column == 0)
-        {
-            for (size_t i = 0; i < csv->CsvFile_U.with_header.count_headers; i++)
+    if (csv->type == CSV_WITH_HEADER) {
+        // Search headers first if needed
+        if (search_column == 0 || search_column <= csv->CsvFile_U.with_header.count_headers) {
+            #pragma omp parallel
             {
-                if (match_field(csv->CsvFile_U.with_header.header[i], query, search_type, correction, &distance))
-                {
-                    // Create a new result node
-                    CsvResult *new_result = calloc(1, sizeof(CsvResult));
-                    if (!new_result)
-                        continue;
+                int tid = omp_get_thread_num();
+                int distance = 0;
+                CsvResult* local_head = NULL;
+                CsvResult* local_tail = NULL;
 
-                    new_result->isHeadered = true;
-                    new_result->isCorrected = (distance > 0);
-                    new_result->distance = distance;
-                    new_result->result      = csv->CsvFile_U.with_header.header[i];
-                    new_result->column_name = csv->CsvFile_U.with_header.header[i];
-                    new_result->line_number = 0; // Headers are at line 0
-                    new_result->filename = NULL; // No filename for header
-                    new_result->next = NULL;
+                #pragma omp for
+                for (size_t i = 0; i < csv->CsvFile_U.with_header.count_headers; i++) {
+                    if (search_column == 0 || search_column == i + 1) {
+                        if (match_field(csv->CsvFile_U.with_header.header[i], query, search_type, correction, &distance)) {
+                            CsvResult* new_result = calloc(1, sizeof(CsvResult));
+                            if (new_result) {
+                                new_result->isHeadered = true;
+                                new_result->isCorrected = (distance > 0);
+                                new_result->distance = distance;
+                                new_result->column_name = csv->CsvFile_U.with_header.header[i];
+                                new_result->result = csv->CsvFile_U.with_header.header[i];
+                                new_result->line_number = 0;
+                                new_result->next = NULL;
 
-                    // Add to the linked list
-                    if (!head)
-                    {
-                        head = new_result;
-                        tail = new_result;
-                    }
-                    else
-                    {
-                        tail->next = new_result;
-                        tail = new_result;
-                    }
-                    match_count++;
-                }
-            }
-        }
-        else if (search_column <= csv->CsvFile_U.with_header.count_headers)
-        {
-            // Check only the specified header column
-            size_t col = search_column - 1; // Convert to 0-based index
-            if (match_field(csv->CsvFile_U.with_header.header[col], query, search_type, correction, &distance))
-            {
-                CsvResult *new_result = calloc(1, sizeof(CsvResult));
-                if (new_result)
-                {
-                    new_result->isHeadered = true;
-                    new_result->isCorrected = (distance > 0);
-                    new_result->distance = distance;
-                    new_result->column_name = csv->CsvFile_U.with_header.header[col];
-                    new_result->result      = csv->CsvFile_U.with_header.header[col];
-                    new_result->line_number = 0;
-                    new_result->filename = NULL;
-                    new_result->next = NULL;
-
-                    head = new_result;
-                    tail = new_result;
-                    match_count++;
-                }
-            }
-        }
-
-        // Search in data entries
-        for (size_t i = 0; i < csv->CsvFile_U.with_header.count_lines; i++)
-        {
-            if (search_column == 0)
-            {
-                // Search all columns
-                for (size_t j = 0; j < csv->CsvFile_U.with_header.count_headers; j++)
-                {
-                    if (match_field(csv->CsvFile_U.with_header.entries[i][j], query, search_type, correction, &distance))
-                    {
-                        CsvResult *new_result = malloc(sizeof(CsvResult));
-                        if (!new_result)
-                            continue;
-
-                        new_result->isHeadered = false;
-                        new_result->isCorrected = (distance > 0);
-                        new_result->distance = distance;
-                        new_result->column_name = csv->CsvFile_U.with_header.header[j];
-                        new_result->result      = csv->CsvFile_U.with_header.entries[i][j];
-                        new_result->line_number = i + 1; // +1 because lines are 1-indexed for display
-                        new_result->filename = NULL;
-                        new_result->next = NULL;
-
-                        if (!head)
-                        {
-                            head = new_result;
-                            tail = new_result;
+                                if (!local_head) {
+                                    local_head = local_tail = new_result;
+                                } else {
+                                    local_tail->next = new_result;
+                                    local_tail = new_result;
+                                }
+                                local_counts[tid]++;
+                            }
                         }
-                        else
-                        {
-                            tail->next = new_result;
-                            tail = new_result;
-                        }
-                        match_count++;
                     }
                 }
-            }
-            else if (search_column <= csv->CsvFile_U.with_header.count_headers)
-            {
-                // Search only the specified column
-                size_t col = search_column - 1; // Convert to 0-based index
-                if (match_field(csv->CsvFile_U.with_header.entries[i][col], query, search_type, correction, &distance))
-                {
-                    CsvResult *new_result = calloc(1, sizeof(CsvResult));
-                    if (!new_result)
-                        continue;
-
-                    new_result->isHeadered = false;
-                    new_result->isCorrected = (distance > 0);
-                    new_result->distance = distance;
-                    new_result->result = strdup(csv->CsvFile_U.with_header.entries[i][col]);
-                    new_result->filename = NULL;
-                    new_result->column_name = strdup(csv->CsvFile_U.with_header.header[col]);
-                    new_result->line_number = i + 1;
-                    new_result->next = NULL;
-
-                    if (!head)
-                    {
-                        head = new_result;
-                        tail = new_result;
-                    }
-                    else
-                    {
-                        tail->next = new_result;
-                        tail = new_result;
-                    }
-                    match_count++;
-                }
+                local_results[tid] = local_head;
             }
         }
-    }
-    else if (csv->type == CSV_NO_HEADER)
-    {
-        // For non-header CSV, just search each line
-        for (size_t i = 0; i < csv->CsvFile_U.no_header.count_lines; i++)
+
+        // Search data entries
+        #pragma omp parallel
         {
-            if (match_field(csv->CsvFile_U.no_header.entries[i], query, search_type, correction, &distance))
-            {
-                CsvResult *new_result = malloc(sizeof(CsvResult));
-                if (!new_result)
-                    continue;
+            int tid = omp_get_thread_num();
+            int distance = 0;
+            CsvResult* local_head = local_results[tid];
+            CsvResult* local_tail = NULL;
 
-                new_result->isHeadered = false;
-                new_result->isCorrected = (distance > 0);
-                new_result->distance = distance;
-                new_result->result = strdup(csv->CsvFile_U.no_header.entries[i]);
-                new_result->filename = NULL;
-                new_result->column_name = NULL; // No columns in no-header CSV
-                new_result->line_number = i + 1;
-                new_result->next = NULL;
-
-                if (!head)
-                {
-                    head = new_result;
-                    tail = new_result;
-                }
-                else
-                {
-                    tail->next = new_result;
-                    tail = new_result;
-                }
-                match_count++;
+            if (local_head) {
+                local_tail = local_head;
+                while (local_tail->next) local_tail = local_tail->next;
             }
+
+            #pragma omp for
+            for (size_t i = 0; i < csv->CsvFile_U.with_header.count_lines; i++) {
+                if (search_column == 0) {
+                    for (size_t j = 0; j < csv->CsvFile_U.with_header.count_headers; j++) {
+                        if (match_field(csv->CsvFile_U.with_header.entries[i][j], query, search_type, correction, &distance)) {
+                            CsvResult* new_result = calloc(1, sizeof(CsvResult));
+                            if (new_result) {
+                                new_result->isHeadered = false;
+                                new_result->isCorrected = (distance > 0);
+                                new_result->distance = distance;
+                                new_result->column_name = csv->CsvFile_U.with_header.header[j];
+                                new_result->result = csv->CsvFile_U.with_header.entries[i][j];
+                                new_result->line_number = i + 1;
+                                new_result->next = NULL;
+
+                                if (!local_head) {
+                                    local_head = local_tail = new_result;
+                                } else {
+                                    local_tail->next = new_result;
+                                    local_tail = new_result;
+                                }
+                                local_counts[tid]++;
+                            }
+                        }
+                    }
+                } else if (search_column <= csv->CsvFile_U.with_header.count_headers) {
+                    size_t col = search_column - 1;
+                    if (match_field(csv->CsvFile_U.with_header.entries[i][col], query, search_type, correction, &distance)) {
+                        CsvResult* new_result = calloc(1, sizeof(CsvResult));
+                        if (new_result) {
+                            new_result->isHeadered = false;
+                            new_result->isCorrected = (distance > 0);
+                            new_result->distance = distance;
+                            new_result->column_name = strdup(csv->CsvFile_U.with_header.header[col]);
+                            new_result->result = strdup(csv->CsvFile_U.with_header.entries[i][col]);
+                            new_result->line_number = i + 1;
+                            new_result->next = NULL;
+
+                            if (!local_head) {
+                                local_head = local_tail = new_result;
+                            } else {
+                                local_tail->next = new_result;
+                                local_tail = new_result;
+                            }
+                            local_counts[tid]++;
+                        }
+                    }
+                }
+            }
+            local_results[tid] = local_head;
+        }
+    } 
+    // Merge results from all threads
+    CsvResult* tail = NULL;
+    for (int i = 0; i < omp_get_max_threads(); i++) {
+        if (local_results[i]) {
+            if (!head) {
+                head = local_results[i];
+            } else {
+                tail->next = local_results[i];
+            }
+            tail = local_results[i];
+            while (tail->next) tail = tail->next;
         }
     }
 
