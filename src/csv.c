@@ -663,7 +663,7 @@ int csv_results_display(CsvResult *results, size_t limit, char *querry, double t
 {
     const char titleColumn[] = "Column";
     int i_format_column = sizeof(titleColumn) - 1;
-
+    
     CsvResult *current;
     size_t total_results = 0;
     // Count total results
@@ -678,9 +678,7 @@ int csv_results_display(CsvResult *results, size_t limit, char *querry, double t
             }
         }
         total_results++;
-        current = current->next;
     }
-
     size_t current_page = 1;
     size_t total_pages = (total_results + limit - 1) / limit; // Ceiling division
 
