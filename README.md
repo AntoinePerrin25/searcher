@@ -20,15 +20,22 @@ A fast and efficient CSV file search tool with fuzzy matching capabilities.
 
 Requires GCC with OpenMP support.
 
+Compiling thanks to tsoding NoBuild (Nob) file : https://github.com/tsoding/nob.h
+First compile nob :
+
+```bash
+gcc -o nob nob.c
+```
+
 ```bash
 # Build with all optimizations
 ./nob -a
 
-# Build with specific flags
+# Or build with specific flags
 ./nob -g -O -pedantic
 ```
 
-Build flags:
+Available Build flags:
 - `-g`        : Include debug information
 - `-O`        : Enable O2 optimizations
 - `-pedantic` : Enable strict C99 compliance
