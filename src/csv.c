@@ -373,8 +373,8 @@ static bool str_contains(const char *haystack, const char *needle)
         return false;
     }
     
-    strlwer(haystack_lower);
-    strlwer(needle_lower);
+    strlwr(haystack_lower);
+    strlwr(needle_lower);
 
     bool result = strstr(haystack_lower, needle_lower) != NULL;
 
@@ -804,6 +804,7 @@ int csv_results_display(CsvResult *results, size_t limit, char *querry, double t
             ret = 1; // Signal to quit
             break;
         default:
+            {
             // Go to page nbr choice
             char *end;
             size_t pageGOTO = strtoul(choice, &end, 0);
@@ -813,6 +814,7 @@ int csv_results_display(CsvResult *results, size_t limit, char *querry, double t
                 current_page = pageGOTO;
             }
             break;
+            }
         }
 
     } while (ret == 0);

@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
+
 
 #define FLAG_IMPLEMENTATION
 #include "flag.h"
@@ -131,8 +133,13 @@ int main(int argc, char **argv) {
         }
         
         // Perform the search
+        clock_t start_time = clock();
+        double totaltime = 0.0;
         CsvResult* results = csv_search(csv, *query, *column, *search_type, *correction);
         
+        totaltime = (double)(clock() - start_time) / CLOCKS_PER_SEC;
+
+
         // Display the results with pagination
         if (results) {
             csv_results_display(results, *limit, *query, totaltime);            

@@ -86,7 +86,7 @@ CsvResult* csv_search(CsvFile* csv, const char* query, size_t search_column, siz
  * @param limit - Number of results to display per page
  * @return Number of total results
  */
-int csv_results_display(CsvResult *results, size_t limit);
+int csv_results_display(CsvResult *results, size_t limit, char *query, double time);
 
 /**
  * @brief Free memory allocated for CsvResult linked list
